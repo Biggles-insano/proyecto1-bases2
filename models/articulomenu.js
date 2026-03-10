@@ -13,4 +13,4 @@ const articuloMenuSchema = new mongoose.Schema({
     ventas_total: { type: Number, default: 0 } // Para reportes analíticos 
 });
 
-module.exports = mongoose.model('ArticuloMenu', articuloMenuSchema);
+module.exports = mongoose.model('ArticuloMenu', articuloMenuSchema, 'articulos_menu');

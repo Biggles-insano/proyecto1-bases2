@@ -10,6 +10,14 @@ require('dotenv').config();
 async function seedCompleto() {
     try {
         await mongoose.connect(process.env.MONGODB_URI);
+        
+        console.log("Limpiando la base de datos...");
+        await Usuario.deleteMany({});
+        await Restaurante.deleteMany({});
+        await ArticuloMenu.deleteMany({});
+        await Orden.deleteMany({});
+        await Resena.deleteMany({});
+
         console.log("Iniciando Seeding Total...");
 
         // 1. Usuarios
@@ -28,7 +36,10 @@ async function seedCompleto() {
             nombre: faker.company.name(),
             ubicacion: {
                 type: 'Point',
-                coordinates: [faker.location.longitude(), faker.location.latitude()]
+                coordinates: [
+                    faker.location.longitude({ min: -90.55, max: -90.45 }), // Longitud (Ciudad de Guatemala central)
+                    faker.location.latitude({ min: 14.58, max: 14.65 })     // Latitud (Ciudad de Guatemala central)
+                ]
             },
             categorias: [faker.helpers.arrayElement(['italiana', 'pizza', 'hamburguesas', 'chapina', 'asiatica', 'mexicana'])],
             activo: true

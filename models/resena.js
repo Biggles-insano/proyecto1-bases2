@@ -17,4 +17,4 @@ const resenaSchema = new mongoose.Schema({
     creado_en: { type: Date, default: Date.now }
 });
 
-module.exports = mongoose.model('Resena', resenaSchema);
+module.exports = mongoose.model('Resena', resenaSchema, 'resenas');
