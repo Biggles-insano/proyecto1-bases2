@@ -81,5 +81,31 @@ router.get('/conteo-estados', async (req, res) => {
         res.status(500).json({ error: 'Error al calcular las estadísticas de órdenes' });
     }
 });
+// PATCH /api/ordenes/:id/estado — Actualizar estado y agregar al historial
+router.patch('/:id/estado', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { estado, nota } = req.body;
 
+        const estadosValidos = ['pendiente', 'en preparacion', 'camino', 'entregada', 'cancelada'];
+        if (!estadosValidos.includes(estado)) {
+            return res.status(400).json({ error: 'Estado inválido', estadosValidos });
+        }
+
+        const orden = await Orden.findByIdAndUpdate(
+            id,
+            {
+                $set: { estado, actualizado_en: new Date() },
+                $push: { historial_estados: { estado, nota: nota || '', timestamp: new Date() } }
+            },
+            { new: true }
+        );
+
+        if (!orden) return res.status(404).json({ error: 'Orden no encontrada' });
+        res.json({ mensaje: 'Estado actualizado', orden });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Error al actualizar el estado' });
+    }
+});
 module.exports = router;
