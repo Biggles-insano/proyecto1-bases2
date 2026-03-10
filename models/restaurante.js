@@ -29,4 +29,10 @@ const restauranteSchema = new mongoose.Schema({
 // Índice geoespacial para búsquedas cercanas [cite: 292, 301]
 restauranteSchema.index({ ubicacion: '2dsphere' });
 
+// Índice full-text para búsqueda por nombre y descripción
+restauranteSchema.index(
+    { nombre: 'text', descripcion: 'text' },
+    { name: 'idx_rest_text', weights: { nombre: 10, descripcion: 5 } }
+);
+
 module.exports = mongoose.model('Restaurante', restauranteSchema, 'restaurantes');
