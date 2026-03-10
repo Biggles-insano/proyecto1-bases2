@@ -57,4 +57,29 @@ router.post('/', async (req, res) => {
     }
 });
 
+// GET /api/ordenes/conteo-estados: Agrupar por estado y contar
+router.get('/conteo-estados', async (req, res) => {
+    try {
+        const conteo = await Orden.aggregate([
+            {
+                // Agrupar órdenes según su campo "estado"
+                $group: {
+                    _id: "$estado",
+                    // Contar cuántos documentos entran en este grupo
+                    total_ordenes: { $sum: 1 }
+                }
+            },
+            {
+                // Ordenar por las más numerosas
+                $sort: { total_ordenes: -1 }
+            }
+        ]);
+
+        res.json(conteo);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Error al calcular las estadísticas de órdenes' });
+    }
+});
+
 module.exports = router;
