@@ -92,6 +92,21 @@ router.get('/top', async (req, res) => {
     }
 });
 
+// DELETE /api/restaurantes/:id — Eliminar un restaurante
+router.delete('/:id', async (req, res) => {
+    try {
+        if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+            return res.status(400).json({ error: 'ID inválido' });
+        }
+        const r = await Restaurante.findByIdAndDelete(req.params.id);
+        if (!r) return res.status(404).json({ error: 'Restaurante no encontrado' });
+        res.json({ mensaje: 'Restaurante eliminado' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Error al eliminar' });
+    }
+});
+
 // POST /api/restaurantes — Crear restaurante (la imagen se sube aparte con /api/archivos)
 router.post('/', async (req, res) => {
     try {

@@ -4,6 +4,17 @@ const Resena = require('../models/resena');
 const ArticuloMenu = require('../models/articulomenu');
 const Orden = require('../models/orden');
 
+// GET /api/reportes/categorias — distinct de categorías de artículos (agregación simple)
+router.get('/categorias', async (req, res) => {
+    try {
+        const categorias = await ArticuloMenu.distinct('categoria');
+        res.json({ categorias });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Error al obtener categorías' });
+    }
+});
+
 // GET /api/reportes/top-restaurantes
 // Aggregation pipeline: Top 5 restaurantes mejor calificados (mínimo 10 reseñas)
 router.get('/top-restaurantes', async (req, res) => {

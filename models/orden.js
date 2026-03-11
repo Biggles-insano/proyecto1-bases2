@@ -28,4 +28,6 @@ const ordenSchema = new mongoose.Schema({
     actualizado_en: { type: Date, default: Date.now }
 });
 
+ordenSchema.index({ usuario_id: 1, creado_en: -1 });
+
 module.exports = mongoose.model('Orden', ordenSchema, 'ordenes');

@@ -4,6 +4,40 @@ const mongoose = require('mongoose');
 const Resena = require('../models/resena');
 const Restaurante = require('../models/restaurante');
 
+// PATCH /api/resenas/:id/tags — Añadir tag con $addToSet o quitar con $pull
+router.patch('/:id/tags', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { agregar, quitar } = req.body;
+        if (!mongoose.Types.ObjectId.isValid(id)) return res.status(400).json({ error: 'ID inválido' });
+        let update;
+        if (agregar) update = { $addToSet: { tags: agregar } };
+        else if (quitar) update = { $pull: { tags: quitar } };
+        else return res.status(400).json({ error: 'Enviar "agregar" o "quitar"' });
+        const r = await Resena.findByIdAndUpdate(id, update, { new: true });
+        if (!r) return res.status(404).json({ error: 'Reseña no encontrada' });
+        res.json(r);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Error al actualizar tags' });
+    }
+});
+
+// DELETE /api/resenas/por-restaurante — Eliminar varias reseñas (deleteMany)
+router.delete('/por-restaurante', async (req, res) => {
+    try {
+        const { restaurante_id } = req.query;
+        if (!restaurante_id || !mongoose.Types.ObjectId.isValid(restaurante_id)) {
+            return res.status(400).json({ error: 'restaurante_id requerido y válido' });
+        }
+        const result = await Resena.deleteMany({ restaurante_id });
+        res.json({ mensaje: 'Reseñas eliminadas', deletedCount: result.deletedCount });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Error al eliminar' });
+    }
+});
+
 // POST /api/resenas
 // Crea una reseña y recalcula calificacion_prom del restaurante (transacción)
 router.post('/', async (req, res) => {

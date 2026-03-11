@@ -8,6 +8,9 @@ Base URL: `http://localhost:3000/api`
 
 ## 🍽️ Restaurantes
 
+### `DELETE /restaurantes/:id`
+Elimina un restaurante.
+
 ### `GET /restaurantes/cerca`
 ```
 http://localhost:3000/api/restaurantes/cerca?lng=-90.5069&lat=14.6105&maxDistance=5000
@@ -41,6 +44,12 @@ Content-Type: application/json
 ---
 
 ## 📦 Órdenes
+
+### `GET /ordenes/:id`
+Obtiene una orden por ID con datos de usuario y restaurante (lookup).
+```
+GET http://localhost:3000/api/ordenes/<id>
+```
 
 ### `GET /ordenes/conteo-estados`
 ```
@@ -76,6 +85,12 @@ Content-Type: application/json
 ```
 Estados válidos: `pendiente` · `en preparacion` · `camino` · `entregada` · `cancelada`
 
+### `PATCH /ordenes/cancelar-pendientes`
+Actualiza varias órdenes pendientes a cancelada (updateMany). Body opcional: `{ "restaurante_id": "<id>" }`.
+
+### `DELETE /ordenes/:id`
+Elimina una orden.
+
 ---
 
 ## 👤 Usuarios
@@ -89,6 +104,12 @@ http://localhost:3000/api/usuarios/<id>/ordenes?page=1&limit=10
 ---
 
 ## ⭐ Reseñas
+
+### `PATCH /resenas/:id/tags`
+Añadir o quitar tag: body `{ "agregar": "rapido" }` o `{ "quitar": "rapido" }`.
+
+### `DELETE /resenas/por-restaurante?restaurante_id=<id>`
+Elimina todas las reseñas de un restaurante (deleteMany).
 
 ### `POST /resenas`
 ```json
@@ -108,6 +129,9 @@ Content-Type: application/json
 ---
 
 ## 📊 Reportes
+
+### `GET /reportes/categorias`
+Lista de categorías distintas de artículos (distinct).
 
 ### `GET /reportes/top-restaurantes`
 ```

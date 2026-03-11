@@ -35,4 +35,6 @@ restauranteSchema.index(
     { name: 'idx_rest_text', weights: { nombre: 10, descripcion: 5 } }
 );
 
+restauranteSchema.index({ categorias: 1 });
+
 module.exports = mongoose.model('Restaurante', restauranteSchema, 'restaurantes');
