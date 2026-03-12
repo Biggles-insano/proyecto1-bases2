@@ -1,4 +1,5 @@
 const express = require('express');
+const path = require('path');
 const conectarDB = require('./db');
 const restauranteRoutes = require('./routes/restaurantes');
 const ordenRoutes = require('./routes/ordenes');
@@ -6,12 +7,32 @@ const usuarioRoutes = require('./routes/usuarios');
 const resenaRoutes  = require('./routes/resenas');
 const reporteRoutes = require('./routes/reportes');
 const archivoRoutes = require('./routes/archivos');
+const Usuario = require('./models/usuario');
+const Restaurante = require('./models/restaurante');
+const ArticuloMenu = require('./models/articulomenu');
+const Orden = require('./models/orden');
+const Resena = require('./models/resena');
 
 const app = express();
 app.use(express.json());
+app.use(express.static(path.join(__dirname, 'public')));
 
 // Conexión a la base de datos
 conectarDB();
+
+// Endpoint utilitario: devuelve IDs reales para usar en el frontend
+app.get('/api/test-data', async (req, res) => {
+    try {
+        const usuario     = await Usuario.findOne().select('_id nombre email');
+        const restaurante = await Restaurante.findOne().select('_id nombre');
+        const articulo    = await ArticuloMenu.findOne({ restaurante_id: restaurante._id }).select('_id nombre precio');
+        const orden       = await Orden.findOne({ usuario_id: usuario._id }).select('_id estado');
+        const resena      = await Resena.findOne({ restaurante_id: restaurante._id }).select('_id titulo');
+        res.json({ usuario, restaurante, articulo, orden, resena });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
 
 // Rutas
 app.use('/api/restaurantes', restauranteRoutes);

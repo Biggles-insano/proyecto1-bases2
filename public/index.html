@@ -1,0 +1,1113 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Restaurantes API</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --sidebar-bg: #0d1117;
+      --sidebar-hover: #161b22;
+      --sidebar-active: #1c2128;
+      --sidebar-border: #21262d;
+      --sidebar-text: #7d8590;
+      --sidebar-text-active: #e6edf3;
+
+      --bg: #f6f8fa;
+      --surface: #ffffff;
+      --border: #d0d7de;
+      --border-strong: #b1bac4;
+
+      --text: #1f2328;
+      --text-muted: #656d76;
+
+      --blue: #0969da;
+      --blue-bg: #ddf4ff;
+      --green: #1a7f37;
+      --green-bg: #dafbe1;
+      --amber: #9a6700;
+      --amber-bg: #fff8c5;
+      --orange: #bc4c00;
+      --orange-bg: #fff1e5;
+      --red: #cf222e;
+      --red-bg: #ffebe9;
+      --purple: #8250df;
+      --purple-bg: #fbefff;
+
+      --font: 'Inter', system-ui, sans-serif;
+      --mono: 'JetBrains Mono', 'Fira Mono', monospace;
+
+      --radius: 8px;
+      --radius-sm: 5px;
+      --transition: 0.15s ease;
+    }
+
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+      font-size: 14px;
+    }
+
+    /* ─── SIDEBAR ─── */
+    nav {
+      width: 240px;
+      min-width: 240px;
+      background: var(--sidebar-bg);
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      border-right: 1px solid var(--sidebar-border);
+    }
+
+    .nav-brand {
+      padding: 20px 16px 16px;
+      border-bottom: 1px solid var(--sidebar-border);
+    }
+
+    .brand-name {
+      font-size: 14px;
+      font-weight: 700;
+      color: #e6edf3;
+      letter-spacing: -0.2px;
+    }
+
+    .brand-tag {
+      display: inline-block;
+      margin-top: 5px;
+      font-size: 10px;
+      font-weight: 600;
+      font-family: var(--mono);
+      letter-spacing: 0.05em;
+      color: #388bfd;
+      background: rgba(56,139,253,0.12);
+      padding: 2px 8px;
+      border-radius: 20px;
+      border: 1px solid rgba(56,139,253,0.25);
+    }
+
+    .nav-group { padding: 8px 8px 2px; }
+
+    .nav-group-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.09em;
+      text-transform: uppercase;
+      color: #484f58;
+      padding: 6px 8px 4px;
+    }
+
+    nav a {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 7px 10px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--sidebar-text);
+      cursor: pointer;
+      border-radius: var(--radius-sm);
+      transition: background var(--transition), color var(--transition);
+      line-height: 1.3;
+    }
+
+    nav a:hover { background: var(--sidebar-hover); color: #cdd9e5; }
+
+    nav a.active {
+      background: var(--sidebar-active);
+      color: var(--sidebar-text-active);
+    }
+
+    nav a .method-dot {
+      font-size: 9px;
+      font-weight: 700;
+      font-family: var(--mono);
+      padding: 1px 5px;
+      border-radius: 3px;
+      letter-spacing: 0.04em;
+      flex-shrink: 0;
+    }
+
+    .get  { background: rgba(26,127,55,0.2);  color: #3fb950; }
+    .post { background: rgba(56,139,253,0.2); color: #79c0ff; }
+    .patch{ background: rgba(154,103,0,0.25); color: #e3b341; }
+
+    /* ─── MAIN ─── */
+    main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      min-width: 0;
+    }
+
+    .topbar {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 24px;
+      height: 52px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-shrink: 0;
+    }
+
+    .topbar-method {
+      font-size: 11px;
+      font-weight: 700;
+      font-family: var(--mono);
+      letter-spacing: 0.05em;
+      padding: 4px 10px;
+      border-radius: var(--radius-sm);
+    }
+
+    .topbar-url {
+      font-size: 13px;
+      font-family: var(--mono);
+      font-weight: 500;
+      color: var(--text-muted);
+      flex: 1;
+    }
+
+    .topbar-url span { color: var(--text); }
+
+    .topbar-badge {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      padding: 3px 10px;
+      border-radius: 20px;
+      margin-left: auto;
+    }
+
+    .status-pill {
+      font-size: 11px;
+      font-weight: 700;
+      font-family: var(--mono);
+      padding: 3px 10px;
+      border-radius: var(--radius-sm);
+      display: none;
+    }
+
+    /* ─── TWO COLUMN LAYOUT ─── */
+    .workspace {
+      flex: 1;
+      display: flex;
+      overflow: hidden;
+    }
+
+    .pane {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px;
+      min-width: 0;
+    }
+
+    .pane-response {
+      background: var(--sidebar-bg);
+      border-left: 1px solid var(--sidebar-border);
+    }
+
+    /* ─── SECTIONS ─── */
+    .section { display: none; }
+    .section.active { display: flex; flex-direction: column; gap: 14px; }
+
+    /* ─── FORM CARD ─── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    .card-header {
+      padding: 14px 16px;
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+
+    .card-header-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 15px;
+    }
+
+    .card-header-text {}
+
+    .card-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .card-desc {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 2px;
+      line-height: 1.5;
+    }
+
+    .card-body { padding: 16px; }
+
+    /* ─── FIELDS ─── */
+    .field { margin-bottom: 12px; }
+    .field:last-child { margin-bottom: 0; }
+
+    .field-row { display: grid; gap: 10px; }
+    .cols-2 { grid-template-columns: 1fr 1fr; }
+    .cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+
+    label {
+      display: block;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      color: var(--text-muted);
+      margin-bottom: 5px;
+      text-transform: uppercase;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 8px 12px;
+      font-family: var(--font);
+      font-size: 13px;
+      font-weight: 400;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: var(--surface);
+      color: var(--text);
+      outline: none;
+      transition: border-color var(--transition), box-shadow var(--transition);
+      height: 36px;
+    }
+
+    input:focus, select:focus {
+      border-color: #0969da;
+      box-shadow: 0 0 0 3px rgba(9,105,218,0.12);
+    }
+
+    input::placeholder { color: #b1bac4; font-weight: 400; }
+
+    .input-mono { font-family: var(--mono); font-size: 12px; }
+
+    /* ─── ACTIONS ─── */
+    .actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 16px;
+      border-top: 1px solid var(--border);
+      background: var(--bg);
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 0 16px;
+      height: 32px;
+      font-size: 13px;
+      font-weight: 600;
+      font-family: var(--font);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: all var(--transition);
+    }
+
+    .btn-primary {
+      background: #1f883d;
+      color: white;
+      border-color: rgba(31,136,61,0.4);
+      box-shadow: 0 1px 0 rgba(31,136,61,0.2), inset 0 1px 0 rgba(255,255,255,0.1);
+    }
+
+    .btn-primary:hover { background: #1a7f37; }
+    .btn-primary:active { background: #187733; transform: scale(0.98); }
+
+    .btn-secondary {
+      background: var(--surface);
+      color: var(--text);
+      border-color: var(--border-strong);
+      box-shadow: 0 1px 0 rgba(31,35,40,0.04);
+    }
+
+    .btn-secondary:hover { background: #f3f4f6; }
+
+    /* ─── RESPONSE PANE ─── */
+    .res-header {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--sidebar-border);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .res-header-title {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      color: #484f58;
+    }
+
+    .res-status {
+      font-size: 11px;
+      font-weight: 700;
+      font-family: var(--mono);
+      padding: 2px 8px;
+      border-radius: 4px;
+      margin-left: auto;
+      display: none;
+    }
+
+    .res-status.ok { background: rgba(26,127,55,0.2); color: #3fb950; }
+    .res-status.err { background: rgba(207,34,46,0.2); color: #f85149; }
+
+    .res-body {
+      padding: 16px;
+      font-family: var(--mono);
+      font-size: 12px;
+      line-height: 1.7;
+      color: #7d8590;
+      height: 100%;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .res-body.loaded { color: #cdd9e5; }
+    .res-body.err-color { color: #f85149; }
+
+    .res-placeholder {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      gap: 10px;
+      color: #484f58;
+      padding: 40px;
+      text-align: center;
+    }
+
+    .res-placeholder-icon {
+      font-size: 28px;
+      opacity: 0.5;
+    }
+
+    .res-placeholder-text { font-size: 13px; font-weight: 500; }
+    .res-placeholder-sub { font-size: 12px; color: #30363d; }
+
+    /* ─── SECTION HEADER COLORS ─── */
+    .icon-blue   { background: var(--blue-bg);   color: var(--blue); }
+    .icon-green  { background: var(--green-bg);  color: var(--green); }
+    .icon-amber  { background: var(--amber-bg);  color: var(--amber); }
+    .icon-purple { background: var(--purple-bg); color: var(--purple); }
+    .icon-orange { background: var(--orange-bg); color: var(--orange); }
+    .icon-red    { background: var(--red-bg);    color: var(--red); }
+
+    .badge-blue   { background: var(--blue-bg);   color: var(--blue);   border: 1px solid #b6e3ff; }
+    .badge-green  { background: var(--green-bg);  color: var(--green);  border: 1px solid #b4f1be; }
+    .badge-amber  { background: var(--amber-bg);  color: var(--amber);  border: 1px solid #f5e08b; }
+    .badge-purple { background: var(--purple-bg); color: var(--purple); border: 1px solid #e2c5ff; }
+    .badge-orange { background: var(--orange-bg); color: var(--orange); border: 1px solid #ffd8b5; }
+
+    .method-get   { background: var(--green-bg);  color: var(--green);  border: 1px solid #b4f1be; }
+    .method-post  { background: var(--blue-bg);   color: var(--blue);   border: 1px solid #b6e3ff; }
+    .method-patch { background: var(--amber-bg);  color: var(--amber);  border: 1px solid #f5e08b; }
+
+    /* scrollbar */
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #30363d; border-radius: 10px; }
+
+    .res-scroll { overflow-y: auto; flex: 1; }
+    .pane-response { display: flex; flex-direction: column; }
+  </style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<nav>
+  <div class="nav-brand">
+    <div class="brand-name">Restaurantes API</div>
+    <div class="brand-tag">Bases de Datos 2</div>
+  </div>
+
+  <div class="nav-group">
+    <button id="fill-btn" onclick="cargarIDs()" style="
+      width:100%; padding:9px 10px; margin-bottom:2px;
+      background:#1f883d; color:white; border:none; border-radius:5px;
+      font-size:12px; font-weight:700; font-family:var(--font);
+      cursor:pointer; transition:background .15s; text-align:left;
+      display:flex; align-items:center; gap:8px;
+    ">
+      <span style="font-size:14px;">&#8645;</span> Cargar IDs de ejemplo
+    </button>
+    <div id="fill-status" style="font-size:11px;color:#484f58;padding:0 4px 6px;display:none;"></div>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">Transacciones</div>
+    <a onclick="show('crear-orden','POST','/api/ordenes','ACID','blue')" id="link-crear-orden">
+      Crear Orden <span class="method-dot post">POST</span>
+    </a>
+    <a onclick="show('crear-resena','POST','/api/resenas','ACID','blue')" id="link-crear-resena">
+      Crear Resena <span class="method-dot post">POST</span>
+    </a>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">Agregaciones Simples</div>
+    <a onclick="show('conteo-estados','GET','/api/ordenes/conteo-estados','AGG. SIMPLE','green')" id="link-conteo-estados">
+      Conteo de Estados <span class="method-dot get">GET</span>
+    </a>
+    <a onclick="show('categorias','GET','/api/reportes/categorias','AGG. SIMPLE','green')" id="link-categorias">
+      Categorias Unicas <span class="method-dot get">GET</span>
+    </a>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">Agregaciones Complejas</div>
+    <a onclick="show('top-restaurantes','GET','/api/reportes/top-restaurantes','AGG. COMPLEJA','purple')" id="link-top-restaurantes">
+      Top Restaurantes <span class="method-dot get">GET</span>
+    </a>
+    <a onclick="show('platillos','GET','/api/reportes/platillos-mas-vendidos','AGG. COMPLEJA','purple')" id="link-platillos">
+      Platillos Vendidos <span class="method-dot get">GET</span>
+    </a>
+    <a onclick="show('orden-detail','GET','/api/ordenes/:id','AGG. COMPLEJA','purple')" id="link-orden-detail">
+      Detalle de Orden <span class="method-dot get">GET</span>
+    </a>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">Indices</div>
+    <a onclick="show('cerca','GET','/api/restaurantes/cerca','2DSPHERE','amber')" id="link-cerca">
+      Busqueda Geoespacial <span class="method-dot get">GET</span>
+    </a>
+    <a onclick="show('fulltext','GET','/api/restaurantes/buscar','FULL-TEXT','amber')" id="link-fulltext">
+      Busqueda Full-Text <span class="method-dot get">GET</span>
+    </a>
+    <a onclick="show('menu','GET','/api/restaurantes/:id/menu','MULTIKEY','amber')" id="link-menu">
+      Menu con Filtros <span class="method-dot get">GET</span>
+    </a>
+    <a onclick="show('historial','GET','/api/usuarios/:id/ordenes','COMPUESTO','amber')" id="link-historial">
+      Historial de Usuario <span class="method-dot get">GET</span>
+    </a>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">Operaciones</div>
+    <a onclick="show('actualizar-estado','PATCH','/api/ordenes/:id/estado','UPDATE OP.','orange')" id="link-actualizar-estado">
+      Actualizar Estado <span class="method-dot patch">PATCH</span>
+    </a>
+    <a onclick="show('cancelar-pendientes','PATCH','/api/ordenes/cancelar-pendientes','UPDATE MANY','orange')" id="link-cancelar-pendientes">
+      Cancelar Pendientes <span class="method-dot patch">PATCH</span>
+    </a>
+    <a onclick="show('tags','PATCH','/api/resenas/:id/tags','ADDTOSET/PULL','orange')" id="link-tags">
+      Editar Tags <span class="method-dot patch">PATCH</span>
+    </a>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<main>
+  <div class="topbar">
+    <span class="topbar-method" id="topbar-method"></span>
+    <span class="topbar-url" id="topbar-url"></span>
+    <span class="topbar-badge" id="topbar-badge" style="font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;padding:3px 10px;border-radius:20px;"></span>
+  </div>
+
+  <div class="workspace">
+    <!-- FORM PANE -->
+    <div class="pane">
+
+      <!-- CREAR ORDEN -->
+      <div class="section active" id="sec-crear-orden">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-header-icon icon-blue">+</div>
+            <div class="card-header-text">
+              <div class="card-title">Crear Orden</div>
+              <div class="card-desc">Crea la orden y actualiza <code>ventas_total</code> de cada articulo atomicamente. Si algo falla, se revierte todo.</div>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="field field-row cols-2">
+              <div><label>usuario_id</label><input id="ord-usuario" class="input-mono" placeholder="ObjectId"></div>
+              <div><label>restaurante_id</label><input id="ord-restaurante" class="input-mono" placeholder="ObjectId"></div>
+            </div>
+            <div class="field"><label>articulo_id</label><input id="ord-articulo-id" class="input-mono" placeholder="ObjectId del articulo del menu"></div>
+            <div class="field field-row cols-3">
+              <div><label>Nombre</label><input id="ord-articulo-nombre" value="Tacos al Pastor"></div>
+              <div><label>Precio</label><input id="ord-articulo-precio" type="number" value="35"></div>
+              <div><label>Cantidad</label><input id="ord-articulo-cantidad" type="number" value="2"></div>
+            </div>
+            <div class="field field-row cols-2">
+              <div><label>Total</label><input id="ord-total" type="number" value="70"></div>
+              <div><label>Metodo de pago</label>
+                <select id="ord-pago"><option>efectivo</option><option>tarjeta</option><option>transferencia</option></select>
+              </div>
+            </div>
+            <div class="field"><label>Notas (opcional)</label><input id="ord-notas" placeholder="Instrucciones especiales"></div>
+          </div>
+          <div class="actions">
+            <button class="btn btn-primary" onclick="crearOrden()">Enviar</button>
+            <button class="btn btn-secondary" onclick="clearRes()">Limpiar respuesta</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- CREAR RESENA -->
+      <div class="section" id="sec-crear-resena">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-header-icon icon-blue">+</div>
+            <div class="card-header-text">
+              <div class="card-title">Crear Resena</div>
+              <div class="card-desc">Guarda la resena y recalcula <code>calificacion_prom</code> del restaurante. Dos colecciones, una transaccion.</div>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="field field-row cols-2">
+              <div><label>usuario_id</label><input id="res-usuario" class="input-mono" placeholder="ObjectId"></div>
+              <div><label>restaurante_id</label><input id="res-restaurante" class="input-mono" placeholder="ObjectId"></div>
+            </div>
+            <div class="field field-row cols-2">
+              <div><label>Titulo</label><input id="res-titulo" value="Excelente servicio"></div>
+              <div><label>Calificacion (1-5)</label><input id="res-calificacion" type="number" min="1" max="5" value="5"></div>
+            </div>
+            <div class="field"><label>Comentario</label><input id="res-comentario" value="Todo estuvo perfecto."></div>
+            <div class="field"><label>Tags (separados por coma)</label><input id="res-tags" value="rapido, delicioso"></div>
+          </div>
+          <div class="actions">
+            <button class="btn btn-primary" onclick="crearResena()">Enviar</button>
+            <button class="btn btn-secondary" onclick="clearRes()">Limpiar respuesta</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- CONTEO ESTADOS -->
+      <div class="section" id="sec-conteo-estados">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-header-icon icon-green">~</div>
+            <div class="card-header-text">
+              <div class="card-title">Conteo de Estados</div>
+              <div class="card-desc">Agrupa todas las ordenes por estado y cuenta cuantas hay en cada grupo. Usa <code>$group</code> y <code>$sum: 1</code>.</div>
+            </div>
+          </div>
+          <div class="actions" style="border-top:none;">
+            <button class="btn btn-primary" onclick="get('/api/ordenes/conteo-estados')">Ejecutar consulta</button>
+            <button class="btn btn-secondary" onclick="clearRes()">Limpiar</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- CATEGORIAS -->
+      <div class="section" id="sec-categorias">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-header-icon icon-green">~</div>
+            <div class="card-header-text">
+              <div class="card-title">Categorias Unicas</div>
+              <div class="card-desc">Devuelve todos los valores unicos del campo <code>categoria</code> en <code>articulos_menu</code>. Usa <code>distinct()</code>.</div>
+            </div>
+          </div>
+          <div class="actions" style="border-top:none;">
+            <button class="btn btn-primary" onclick="get('/api/reportes/categorias')">Ejecutar consulta</button>
+            <button class="btn btn-secondary" onclick="clearRes()">Limpiar</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- TOP RESTAURANTES -->
+      <div class="section" id="sec-top-restaurantes">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-header-icon icon-purple">#</div>
+            <div class="card-header-text">
+              <div class="card-title">Top 5 Restaurantes</div>
+              <div class="card-desc">Pipeline de 7 etapas: <code>$group → $match → $sort → $limit → $lookup → $unwind → $project</code>. Solo restaurantes con 10+ resenas.</div>
+            </div>
+          </div>
+          <div class="actions" style="border-top:none;">
+            <button class="btn btn-primary" onclick="get('/api/reportes/top-restaurantes')">Ejecutar pipeline</button>
+            <button class="btn btn-secondary" onclick="clearRes()">Limpiar</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- PLATILLOS -->
+      <div class="section" id="sec-platillos">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-header-icon icon-purple">#</div>
+            <div class="card-header-text">
+              <div class="card-title">Platillos mas Vendidos</div>
+              <div class="card-desc">Ordena por <code>ventas_total</code>, une con restaurantes via <code>$lookup</code>, y calcula ingresos con <code>$multiply</code>.</div>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="field field-row cols-2">
+              <div><label>Limite</label><input id="plat-limit" type="number" value="5"></div>
+              <div><label>restaurante_id (opcional)</label><input id="plat-restaurante" class="input-mono" placeholder="Vacio = todos"></div>
+            </div>
+          </div>
+          <div class="actions">
+            <button class="btn btn-primary" onclick="platillos()">Ejecutar pipeline</button>
+            <button class="btn btn-secondary" onclick="clearRes()">Limpiar</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ORDEN DETAIL -->
+      <div class="section" id="sec-orden-detail">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-header-icon icon-purple">#</div>
+            <div class="card-header-text">
+              <div class="card-title">Detalle de Orden</div>
+              <div class="card-desc">Trae la orden con usuario y restaurante expandidos via <code>$lookup</code> doble — equivalente a un JOIN con dos tablas.</div>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="field"><label>ID de la Orden</label><input id="ord-detail-id" class="input-mono" placeholder="ObjectId de la orden"></div>
+          </div>
+          <div class="actions">
+            <button class="btn btn-primary" onclick="ordenDetail()">Ejecutar</button>
+            <button class="btn btn-secondary" onclick="clearRes()">Limpiar</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- CERCA -->
+      <div class="section" id="sec-cerca">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-header-icon icon-amber">@</div>
+            <div class="card-header-text">
+              <div class="card-title">Busqueda Geoespacial</div>
+              <div class="card-desc">Usa <code>$near</code> con el indice <code>2dsphere</code>. Retorna restaurantes dentro del radio, ordenados por distancia.</div>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="field field-row cols-3">
+              <div><label>Longitud</label><input id="cerca-lng" value="-90.5069"></div>
+              <div><label>Latitud</label><input id="cerca-lat" value="14.6349"></div>
+              <div><label>Radio (metros)</label><input id="cerca-dist" type="number" value="5000"></div>
+            </div>
+          </div>
+          <div class="actions">
+            <button class="btn btn-primary" onclick="cerca()">Buscar cercanos</button>
+            <button class="btn btn-secondary" onclick="clearRes()">Limpiar</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- FULLTEXT -->
+      <div class="section" id="sec-fulltext">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-header-icon icon-amber">@</div>
+            <div class="card-header-text">
+              <div class="card-title">Busqueda Full-Text</div>
+              <div class="card-desc">Usa <code>$text</code> con el indice de texto. Los resultados se ordenan por <code>textScore</code> (relevancia). El campo <code>nombre</code> tiene peso 10, <code>descripcion</code> peso 5.</div>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="field"><label>Termino de busqueda</label><input id="ft-q" value="pizza"></div>
+          </div>
+          <div class="actions">
+            <button class="btn btn-primary" onclick="fulltext()">Buscar</button>
+            <button class="btn btn-secondary" onclick="clearRes()">Limpiar</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- MENU -->
+      <div class="section" id="sec-menu">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-header-icon icon-amber">@</div>
+            <div class="card-header-text">
+              <div class="card-title">Menu con Filtros</div>
+              <div class="card-desc">Filtra usando el indice multikey en el array <code>categorias</code>. Soporta paginacion y ordenamiento dinamico.</div>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="field"><label>restaurante_id</label><input id="menu-id" class="input-mono" placeholder="ObjectId del restaurante"></div>
+            <div class="field field-row cols-3">
+              <div><label>Categoria (opcional)</label><input id="menu-cat" placeholder="Ej: Bebidas"></div>
+              <div><label>Ordenar por</label>
+                <select id="menu-sort"><option value="nombre">nombre</option><option value="precio">precio</option><option value="ventas_total">ventas_total</option></select>
+              </div>
+              <div><label>Limite</label><input id="menu-limit" type="number" value="10"></div>
+            </div>
+          </div>
+          <div class="actions">
+            <button class="btn btn-primary" onclick="menu()">Consultar menu</button>
+            <button class="btn btn-secondary" onclick="clearRes()">Limpiar</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- HISTORIAL -->
+      <div class="section" id="sec-historial">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-header-icon icon-amber">@</div>
+            <div class="card-header-text">
+              <div class="card-title">Historial de Usuario</div>
+              <div class="card-desc">Usa el indice compuesto <code>{"usuario_id": 1, "creado_en": -1}</code>. Una sola pasada sin escanear toda la coleccion.</div>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="field"><label>usuario_id</label><input id="hist-id" class="input-mono" placeholder="ObjectId del usuario"></div>
+            <div class="field field-row cols-2">
+              <div><label>Pagina</label><input id="hist-page" type="number" value="1"></div>
+              <div><label>Por pagina</label><input id="hist-limit" type="number" value="5"></div>
+            </div>
+          </div>
+          <div class="actions">
+            <button class="btn btn-primary" onclick="historial()">Ver historial</button>
+            <button class="btn btn-secondary" onclick="clearRes()">Limpiar</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ACTUALIZAR ESTADO -->
+      <div class="section" id="sec-actualizar-estado">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-header-icon icon-orange">~</div>
+            <div class="card-header-text">
+              <div class="card-title">Actualizar Estado de Orden</div>
+              <div class="card-desc">Cambia el estado con <code>$set</code> y agrega al historial con <code>$push</code> en una sola operacion.</div>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="field"><label>ID de la Orden</label><input id="est-id" class="input-mono" placeholder="ObjectId"></div>
+            <div class="field field-row cols-2">
+              <div><label>Nuevo estado</label>
+                <select id="est-estado"><option>pendiente</option><option>en preparacion</option><option>camino</option><option>entregada</option><option>cancelada</option></select>
+              </div>
+              <div><label>Nota</label><input id="est-nota" placeholder="Descripcion del cambio"></div>
+            </div>
+          </div>
+          <div class="actions">
+            <button class="btn btn-primary" onclick="actualizarEstado()">Actualizar</button>
+            <button class="btn btn-secondary" onclick="clearRes()">Limpiar</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- CANCELAR PENDIENTES -->
+      <div class="section" id="sec-cancelar-pendientes">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-header-icon icon-orange">~</div>
+            <div class="card-header-text">
+              <div class="card-title">Cancelar Ordenes Pendientes</div>
+              <div class="card-desc">Cancela multiples ordenes pendientes en una sola operacion con <code>updateMany</code>. Optionalmente filtra por restaurante.</div>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="field"><label>restaurante_id (opcional)</label><input id="canc-restaurante" class="input-mono" placeholder="Vacio = cancela todas las pendientes del sistema"></div>
+          </div>
+          <div class="actions">
+            <button class="btn btn-primary" onclick="cancelarPendientes()">Ejecutar</button>
+            <button class="btn btn-secondary" onclick="clearRes()">Limpiar</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAGS -->
+      <div class="section" id="sec-tags">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-header-icon icon-orange">~</div>
+            <div class="card-header-text">
+              <div class="card-title">Editar Tags de Resena</div>
+              <div class="card-desc"><code>$addToSet</code> agrega sin duplicados. <code>$pull</code> elimina del array. Solo una accion por llamada.</div>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="field"><label>ID de la Resena</label><input id="tag-id" class="input-mono" placeholder="ObjectId"></div>
+            <div class="field field-row cols-2">
+              <div><label>Tag a agregar</label><input id="tag-agregar" placeholder="Ej: recomendado"></div>
+              <div><label>Tag a quitar</label><input id="tag-quitar" placeholder="Ej: lento"></div>
+            </div>
+          </div>
+          <div class="actions">
+            <button class="btn btn-primary" onclick="editarTag()">Ejecutar</button>
+            <button class="btn btn-secondary" onclick="clearRes()">Limpiar</button>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /pane -->
+
+    <!-- RESPONSE PANE -->
+    <div class="pane pane-response" style="width:420px;min-width:320px;max-width:50%;">
+      <div class="res-header">
+        <span class="res-header-title">Respuesta</span>
+        <span class="res-status" id="res-status"></span>
+      </div>
+      <div class="res-scroll">
+        <div id="res-placeholder" class="res-placeholder">
+          <div class="res-placeholder-icon">{ }</div>
+          <div class="res-placeholder-text">Sin respuesta aun</div>
+          <div class="res-placeholder-sub">Ejecuta una consulta para ver el resultado aqui</div>
+        </div>
+        <pre class="res-body" id="res-body" style="display:none;"></pre>
+      </div>
+    </div>
+
+  </div><!-- /workspace -->
+</main>
+
+<script>
+  const BASE = 'http://localhost:3000';
+  let current = 'crear-orden';
+
+  const SECTIONS = {
+    'crear-orden':         { method:'POST',  path:'/api/ordenes',                        badge:'ACID',         badgeClass:'badge-blue' },
+    'crear-resena':        { method:'POST',  path:'/api/resenas',                        badge:'ACID',         badgeClass:'badge-blue' },
+    'conteo-estados':      { method:'GET',   path:'/api/ordenes/conteo-estados',          badge:'AGG. SIMPLE',  badgeClass:'badge-green' },
+    'categorias':          { method:'GET',   path:'/api/reportes/categorias',             badge:'AGG. SIMPLE',  badgeClass:'badge-green' },
+    'top-restaurantes':    { method:'GET',   path:'/api/reportes/top-restaurantes',       badge:'AGG. COMPLEJA',badgeClass:'badge-purple' },
+    'platillos':           { method:'GET',   path:'/api/reportes/platillos-mas-vendidos', badge:'AGG. COMPLEJA',badgeClass:'badge-purple' },
+    'orden-detail':        { method:'GET',   path:'/api/ordenes/:id',                    badge:'AGG. COMPLEJA',badgeClass:'badge-purple' },
+    'cerca':               { method:'GET',   path:'/api/restaurantes/cerca',              badge:'2DSPHERE',     badgeClass:'badge-amber' },
+    'fulltext':            { method:'GET',   path:'/api/restaurantes/buscar',             badge:'FULL-TEXT',    badgeClass:'badge-amber' },
+    'menu':                { method:'GET',   path:'/api/restaurantes/:id/menu',           badge:'MULTIKEY',     badgeClass:'badge-amber' },
+    'historial':           { method:'GET',   path:'/api/usuarios/:id/ordenes',            badge:'COMPUESTO',    badgeClass:'badge-amber' },
+    'actualizar-estado':   { method:'PATCH', path:'/api/ordenes/:id/estado',              badge:'UPDATE OP.',   badgeClass:'badge-orange' },
+    'cancelar-pendientes': { method:'PATCH', path:'/api/ordenes/cancelar-pendientes',     badge:'UPDATE MANY',  badgeClass:'badge-orange' },
+    'tags':                { method:'PATCH', path:'/api/resenas/:id/tags',                badge:'ADDTOSET/PULL',badgeClass:'badge-orange' },
+  };
+
+  function show(id) {
+    document.getElementById('sec-' + current)?.classList.remove('active');
+    document.getElementById('link-' + current)?.classList.remove('active');
+    current = id;
+    document.getElementById('sec-' + id)?.classList.add('active');
+    document.getElementById('link-' + id)?.classList.add('active');
+
+    const s = SECTIONS[id];
+    const methodEl = document.getElementById('topbar-method');
+    methodEl.textContent = s.method;
+    methodEl.className = 'topbar-method ' + (s.method === 'GET' ? 'method-get' : s.method === 'POST' ? 'method-post' : 'method-patch');
+
+    document.getElementById('topbar-url').innerHTML = '<span style="color:#656d76">localhost:3000</span>' + s.path;
+    const badge = document.getElementById('topbar-badge');
+    badge.textContent = s.badge;
+    badge.className = 'topbar-badge ' + s.badgeClass;
+    clearRes();
+  }
+
+  show('crear-orden');
+
+  function showRes(data, ok) {
+    document.getElementById('res-placeholder').style.display = 'none';
+    const body = document.getElementById('res-body');
+    body.style.display = 'block';
+    body.textContent = JSON.stringify(data, null, 2);
+    body.className = 'res-body loaded' + (ok ? '' : ' err-color');
+    const st = document.getElementById('res-status');
+    st.style.display = 'inline-block';
+    st.className = 'res-status ' + (ok ? 'ok' : 'err');
+    st.textContent = ok ? '200 OK' : 'Error';
+  }
+
+  function clearRes() {
+    document.getElementById('res-placeholder').style.display = 'flex';
+    const body = document.getElementById('res-body');
+    body.style.display = 'none';
+    body.textContent = '';
+    document.getElementById('res-status').style.display = 'none';
+  }
+
+  function setLoading() {
+    document.getElementById('res-placeholder').style.display = 'none';
+    const body = document.getElementById('res-body');
+    body.style.display = 'block';
+    body.className = 'res-body';
+    body.textContent = 'Cargando...';
+    document.getElementById('res-status').style.display = 'none';
+  }
+
+  async function post(path, body) {
+    setLoading();
+    try {
+      const r = await fetch(BASE + path, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body) });
+      showRes(await r.json(), r.ok);
+    } catch(e) { showRes({ error: e.message }, false); }
+  }
+
+  async function patch(path, body) {
+    setLoading();
+    try {
+      const r = await fetch(BASE + path, { method:'PATCH', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body) });
+      showRes(await r.json(), r.ok);
+    } catch(e) { showRes({ error: e.message }, false); }
+  }
+
+  async function get(path) {
+    setLoading();
+    try {
+      const r = await fetch(BASE + path);
+      showRes(await r.json(), r.ok);
+    } catch(e) { showRes({ error: e.message }, false); }
+  }
+
+  function v(id) { return document.getElementById(id)?.value?.trim() || ''; }
+
+  async function cargarIDs() {
+    const btn = document.getElementById('fill-btn');
+    const status = document.getElementById('fill-status');
+    btn.textContent = 'Cargando...';
+    btn.style.opacity = '0.7';
+    status.style.display = 'none';
+    try {
+      const r = await fetch(BASE + '/api/test-data');
+      const d = await r.json();
+      if (!r.ok) throw new Error(d.error);
+
+      const uid = d.usuario?._id || '';
+      const rid = d.restaurante?._id || '';
+      const aid = d.articulo?._id || '';
+      const oid = d.orden?._id || '';
+      const sid = d.resena?._id || '';
+
+      // Crear Orden
+      setVal('ord-usuario', uid);
+      setVal('ord-restaurante', rid);
+      setVal('ord-articulo-id', aid);
+      if (d.articulo) {
+        setVal('ord-articulo-nombre', d.articulo.nombre || '');
+        setVal('ord-articulo-precio', d.articulo.precio || 35);
+        setVal('ord-total', (d.articulo.precio || 35) * 2);
+      }
+      // Crear Resena
+      setVal('res-usuario', uid);
+      setVal('res-restaurante', rid);
+      // Detalle Orden
+      setVal('ord-detail-id', oid);
+      // Historial
+      setVal('hist-id', uid);
+      // Menu
+      setVal('menu-id', rid);
+      // Platillos
+      setVal('plat-restaurante', rid);
+      // Actualizar estado
+      setVal('est-id', oid);
+      // Tags
+      setVal('tag-id', sid);
+      // Cancelar pendientes
+      setVal('canc-restaurante', rid);
+
+      status.style.display = 'block';
+      status.style.color = '#3fb950';
+      status.textContent = 'IDs cargados de la BD';
+    } catch(e) {
+      status.style.display = 'block';
+      status.style.color = '#f85149';
+      status.textContent = 'Error: ' + e.message;
+    } finally {
+      btn.innerHTML = '<span style="font-size:14px;">&#8645;</span> Cargar IDs de ejemplo';
+      btn.style.opacity = '1';
+    }
+  }
+
+  function setVal(id, val) {
+    const el = document.getElementById(id);
+    if (el) el.value = val;
+  }
+
+
+  function crearOrden() {
+    post('/api/ordenes', {
+      usuario_id: v('ord-usuario'), restaurante_id: v('ord-restaurante'),
+      articulos: [{ articulo_id: v('ord-articulo-id'), nombre: v('ord-articulo-nombre'), precio: +v('ord-articulo-precio'), cantidad: +v('ord-articulo-cantidad') }],
+      total: +v('ord-total'), metodo_pago: v('ord-pago'), notas: v('ord-notas'),
+      direccion_entrega: { calle: '6a Av', zona: '10', ciudad: 'Guatemala' }
+    });
+  }
+
+  function crearResena() {
+    post('/api/resenas', {
+      usuario_id: v('res-usuario'), restaurante_id: v('res-restaurante'),
+      calificacion: +v('res-calificacion'), titulo: v('res-titulo'),
+      comentario: v('res-comentario'),
+      tags: v('res-tags').split(',').map(t => t.trim()).filter(Boolean)
+    });
+  }
+
+  function platillos() {
+    let url = '/api/reportes/platillos-mas-vendidos?limit=' + v('plat-limit');
+    const rid = v('plat-restaurante'); if (rid) url += '&restaurante_id=' + rid;
+    get(url);
+  }
+
+  function ordenDetail() {
+    const id = v('ord-detail-id'); if (!id) return alert('Ingresa el ID de la orden');
+    get('/api/ordenes/' + id);
+  }
+
+  function cerca() { get(`/api/restaurantes/cerca?lng=${v('cerca-lng')}&lat=${v('cerca-lat')}&maxDistance=${v('cerca-dist')}`); }
+
+  function fulltext() {
+    const q = v('ft-q'); if (!q) return alert('Ingresa un termino');
+    get('/api/restaurantes/buscar?q=' + encodeURIComponent(q));
+  }
+
+  function menu() {
+    const id = v('menu-id'); if (!id) return alert('Ingresa el ID del restaurante');
+    let url = `/api/restaurantes/${id}/menu?sort=${v('menu-sort')}&order=-1&limit=${v('menu-limit')}`;
+    const cat = v('menu-cat'); if (cat) url += '&categoria=' + encodeURIComponent(cat);
+    get(url);
+  }
+
+  function historial() {
+    const id = v('hist-id'); if (!id) return alert('Ingresa el ID del usuario');
+    get(`/api/usuarios/${id}/ordenes?page=${v('hist-page')}&limit=${v('hist-limit')}`);
+  }
+
+  function actualizarEstado() {
+    const id = v('est-id'); if (!id) return alert('Ingresa el ID de la orden');
+    patch('/api/ordenes/' + id + '/estado', { estado: v('est-estado'), nota: v('est-nota') });
+  }
+
+  function cancelarPendientes() {
+    const body = {}; const rid = v('canc-restaurante'); if (rid) body.restaurante_id = rid;
+    patch('/api/ordenes/cancelar-pendientes', body);
+  }
+
+  function editarTag() {
+    const id = v('tag-id'); if (!id) return alert('Ingresa el ID de la resena');
+    const agregar = v('tag-agregar'); const quitar = v('tag-quitar');
+    if (!agregar && !quitar) return alert('Ingresa un tag para agregar o quitar');
+    patch('/api/resenas/' + id + '/tags', agregar ? { agregar } : { quitar });
+  }
+</script>
+</body>
+</html>
